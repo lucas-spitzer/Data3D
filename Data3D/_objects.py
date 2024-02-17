@@ -32,7 +32,7 @@ class Bar:
 class Text:
     """ Create a singular text object and adds the object to the active 3D scene. """
 
-    def __init__(self, name, text, axis, location=(0.0, 0.0, 1.0), rotation=(0.0, 0.0, 0.0), scale=(1.0, 1.0, 5.0), color="#000000"):
+    def __init__(self, name, text, axis, location=(0.0, 0.0, 1.0), rotation=(math.radians(90.0), 0.0, 0.0), scale=(0.25, 0.25, 5.0), color="#000000"):
         """
         Initializes text object with name, text, location, rotation, scale, and color.
 
@@ -69,7 +69,7 @@ class Text:
     def scale(self):
         """ Scales the text object by the provided scale. """
 
-        # Scaling Algorithm
+        # Base Scaling Algorithm
         length = len(self.text)
 
         if length <= 7:
@@ -86,10 +86,16 @@ class Text:
         
 
     def location(self):
-        """ Changes the location of the text object. """
+        """ Changes the z-location of the text object. """
 
-        # Location Algorithm
-
-        self.text.location = self.location # PLACEHOLDER for location algorithm.
+        # Z Location Algorithm
+        if self.axis.lower() == "x":
+            z_scale = self.scale[2]
+            self.location[2] = (z_scale * 2) - .2
+        elif self.axis.lower() == "y":
+            z_scale = self.scale[2]
+            self.location[2] = (z_scale * 2) - .4
+        else:
+            raise ValueError("Axis must be either 'x' or 'y'.")
 
 
