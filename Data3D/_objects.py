@@ -32,7 +32,7 @@ class Bar:
 class Text:
     """ Create a singular text object and adds the object to the active 3D scene. """
 
-    def __init__(self, name, text, axis, location=(0.0, 0.0, 2.0), rotation=(0.0, 0.0, 0.0), scale=(1.0, 1.0, 1.0), color="#000000"):
+    def __init__(self, name, text, axis, location=(0.0, 0.0, 1.0), rotation=(0.0, 0.0, 0.0), scale=(1.0, 1.0, 5.0), color="#000000"):
         """
         Initializes text object with name, text, location, rotation, scale, and color.
 
@@ -44,6 +44,7 @@ class Text:
             scale (tuple): Scale of the text object. Default is (1.0, 1.0, 1.0), a text with a scale of 1.
             color (str or tuple): Color of the text object. Tuples translate to RGB and strings to Hex. Default is "#000000", black.
         """
+
         self.axis = axis
         self.name = name + f"-{self.axis}Text"
         self.text = text
@@ -51,13 +52,44 @@ class Text:
         self.rotation = rotation
         self.scale = scale
         self.color = color
+        self.scale()
+        self.location()
         self.create()
 
     def create(self):
         """ Creates the text object in the active scene, sets the name, creates an accessor variable, changes text value, and adds color to the object. """
+
         bpy.ops.object.text_add(location=self.location, rotation=self.rotation, scale=self.scale)
+        bpy.ops.object.modifier_add(type='SOLIDIFY')
         self.text = bpy.context.object # Producing a accessor to the text object.
         self.text.data.body = self.text
         self.text.name = self.name
         # Set the color of the text object.
+
+    def scale(self):
+        """ Scales the text object by the provided scale. """
+
+        # Scaling Algorithm
+        length = len(self.text)
+
+        if length <= 7:
+            scale = .275 - (length * .025)
+            self.text.scale = (scale, scale, 5.0)
+        elif length == 8:
+            scale = .09
+            self.text.scale = (scale, scale, 5.0)
+        elif length <= 10:
+            scale = .09 - ((length - 8) * .025)
+            self.text.scale = (scale, scale, 5.0)
+        else:
+            raise ValueError("Text is too long to scale.")
+        
+
+    def location(self):
+        """ Changes the location of the text object. """
+
+        # Location Algorithm
+
+        self.text.location = self.location # PLACEHOLDER for location algorithm.
+
 
