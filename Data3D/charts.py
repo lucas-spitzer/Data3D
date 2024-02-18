@@ -34,6 +34,7 @@ class BarChart:
         self.check_types()
         self.build()
 
+
     def build(self):
         """ Creates the 3D bar chart in the active scene. """
 
@@ -42,7 +43,6 @@ class BarChart:
 
         # Sort and Scaling Algorithm
         df_sorted = self.data.sort_values(by=self.y_col, ascending=False)
-        index_list = df_sorted.index.tolist()
         max_value = df_sorted[self.y_col].max()
         
         # Object Placement Algorithm
@@ -50,28 +50,28 @@ class BarChart:
 
         # Color Assignment Algorithms and Bar Creation
         if type(self.bar_color) == str:
-            for i in index_list:
-                z_scale = df_sorted[self.y_col].iloc[i]/max_value
-                self.objects.append(Bar(name=df_sorted.iloc[i][self.x_col], location=(x_position, 0.0, z_scale), scale=(.25, .25, z_scale), color=self.bar_color))
+            for _, row in df_sorted.iterrows():
+                z_scale = row[self.y_col]/max_value
+                self.objects.append(Bar(name=row[self.x_col], location=(x_position, 0.0, z_scale), scale=(.25, .25, z_scale), color=self.bar_color))
                 x_position += 1
         elif type(self.bar_color) == dict:
-            for i in index_list:
-                z_scale = df_sorted[self.y_col].iloc[i]/max_value
+            for _, row in df_sorted.iterrows():
+                z_scale = row[self.y_col]/max_value
                 for color in self.bar_color:
-                    if df_sorted.iloc[i][self.x_col] == color:
-                        self.objects.append(Bar(name=df_sorted.iloc[i][self.x_col], location=(x_position, 0.0, z_scale), scale=(.25, .25, z_scale), color=self.bar_color[color]))
+                    if row[self.x_col] == color:
+                        self.objects.append(Bar(name=row[self.x_col], location=(x_position, 0.0, z_scale), scale=(.25, .25, z_scale), color=self.bar_color[color]))
                 x_position += 1
         
         # Text Creation Algorithm
         axis = ["x", "y"]
         x_position = ((len(df_sorted) * -1) + 1) / 2
-        for i in index_list:
-            z_scale = df_sorted[self.y_col].iloc[i]/max_value
+        for _, row in df_sorted.iterrows():
+            z_scale = row[self.y_col]/max_value
             for ax in axis:
                 if ax == "x":
-                    self.objects.append(Text(name=df_sorted.iloc[i][self.x_col], text=df_sorted.iloc[i][self.x_col], z_scale=z_scale, location=(x_position, -.251, 5.0), color=self.text_color, axis=ax))
+                    self.objects.append(Text(name=row[self.x_col], text=row[self.x_col], z_scale=z_scale, location=(x_position, -.251, 5.0), color=self.text_color, axis=ax))
                 elif ax == "y":
-                    self.objects.append(Text(name=df_sorted.iloc[i][self.x_col], text=df_sorted.iloc[i][self.y_col], z_scale=z_scale, location=(x_position, -.251, 5.0), color=self.text_color, axis=ax))
+                    self.objects.append(Text(name=row[self.x_col], text=row[self.y_col], z_scale=z_scale, location=(x_position, -.251, 5.0), color=self.text_color, axis=ax))
             x_position += 1
 
 
