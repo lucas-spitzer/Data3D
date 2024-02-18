@@ -23,6 +23,7 @@ class Bar:
 
     def create(self):
         """ Creates the bar object in the active scene, sets the name, creates an accessor variable, and adds color to the object. """
+
         bpy.ops.mesh.primitive_cube_add(location=self.location, rotation=self.rotation, scale=self.scale)
         self.bar = bpy.context.object # Producing a accessor to the bar object.
         self.bar.name = self.name
@@ -98,4 +99,5 @@ class Text:
         else:
             raise ValueError("Axis must be either 'x' or 'y'.")
 
-
+class Material:
+    
