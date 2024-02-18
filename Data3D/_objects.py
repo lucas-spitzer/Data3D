@@ -33,7 +33,7 @@ class Bar:
 class Text:
     """ Create a singular text object and adds the object to the active 3D scene. """
 
-    def __init__(self, text, axis, side, location=(0.0, 0.0, 1.0), rotation=(math.radians(90.0), 0.0, 0.0), scale=(0.25, 0.25, 5.0), color="#FAF9F6"):
+    def __init__(self, name, text, axis, z_scale, location=(0.0, -.251, 1.0), rotation=(math.radians(90.0), 0.0, 0.0), color="#FAF9F6"):
         """
         Initializes text object with name, text, location, rotation, scale, and color.
 
@@ -46,44 +46,38 @@ class Text:
             color (str): Hex color of the text object. Default is "#FAF9F6", off-white.
         """
 
-        self.side = side
         self.axis = axis
-        self.name = str(text) + f"-{self.axis}Text-{self.side}"
+        self.name = name + f"-{self.axis}Text"
         self.content = str(text)
         self.location = location
         self.rotation = rotation
-        self.scale = scale
         self.color = color
-        self.set_scale()
+        self.z_scale = z_scale
+        self.set_size()
         self.set_location()
         self.create()
 
     def create(self):
         """ Creates the text object in the active scene, sets the name, creates an accessor variable, changes text value, and adds color to the object. """
 
-        bpy.ops.object.text_add(location=self.location, rotation=self.rotation, scale=self.scale)
+        bpy.ops.object.text_add(location=self.location, rotation=self.rotation)
         bpy.ops.object.modifier_add(type='SOLIDIFY')
         bpy.context.object.data.align_x = 'CENTER'
         self.text = bpy.context.object # Producing a accessor to the text object.
         self.text.data.body = self.content
+        self.text.data.size = self.size
         self.text.name = self.name
         Material(self.name, self.color) # Set the color of the active text object.
 
-    def set_scale(self):
+    def set_size(self):
         """ Scales the text object by the provided scale. """
 
         # Base Scaling Algorithm
         length = len(self.content)
-
-        if length <= 7:
-            base_scale = .275 - (length * .025)
-            self.scale = (base_scale, base_scale, 5.0)
-        elif length == 8:
-            base_scale = .09
-            self.scale = (base_scale, base_scale, 5.0)
-        elif length <= 10:
-            base_scale = .09 - ((length - 8) * .025)
-            self.scale = (base_scale, base_scale, 5.0)
+        if length <= 5:
+            self.size = .22 - (length * .02)
+        elif length <= 12:
+            self.size = .17 - (length * .01)
         else:
             raise ValueError("Text is too long to scale.")
         
@@ -92,24 +86,10 @@ class Text:
         """ Changes the z-location of the text object. """
 
         # Z Location Algorithm
-        location_list = list(self.location)
-        if self.axis.lower() == "x":
-            z_scale = self.scale[2]
-            location_list[2] = (z_scale * 2) - .2
-            self.location = tuple(location_list)
-            if self.side == 'Front':
-                location_list[1] = -.275
-                self.location = tuple(location_list)
-            elif self.side == 'Back':
-                location_list[1] = .275
-                self.location = tuple(location_list)
-                rotation_list = list(self.rotation)
-                rotation_list[2] = math.radians(180.0)
-                self.rotation = tuple(rotation_list)
-        elif self.axis.lower() == "y":
-            z_scale = self.scale[2]
-            location_list[2] = (z_scale * 2) - .4
-            self.location = tuple(location_list)
+        if self.axis == "x":
+            self.location = (self.location[0], self.location[1], (self.z_scale * 2) - .2)
+        elif self.axis == "y":
+            self.location = (self.location[0], self.location[1], (self.z_scale * 2) - .4)
         else:
             raise ValueError("Axis must be either 'x' or 'y'.")
 

@@ -1,4 +1,4 @@
-import pandas, bpy, numpy
+import pandas, bpy
 from _objects import Bar, Text
 
 class BarChart:
@@ -20,9 +20,7 @@ class BarChart:
             bar_color (str or dict): Color of the bar objects. Dict translates key names to x_column string anmes to Hex. Default is "#20318D", a dark shade of blue.
         """
         
-        # create a function to confirm data is a dataframe.
         self.data = data
-        # create a function to confirm y_labels are numerical / quantitative.
         data[x_labels] = data[x_labels].astype('string')
         self.x_labels = data[x_labels]
         data[y_values] = data[y_values].apply(float)
@@ -30,9 +28,6 @@ class BarChart:
         self.x_col = x_labels
         self.y_col = y_values
         self.title = title
-        # self.location = location
-        # self.rotation = rotation
-        # self.scale = scale
         self.bar_color = bar_color
         self.text_color = text_color
         self.objects = []
@@ -51,37 +46,33 @@ class BarChart:
         max_value = df_sorted[self.y_col].max()
         
         # Object Placement Algorithm
-        x_position = (len(df_sorted) * -1) + 1
+        x_position = ((len(df_sorted) * -1) + 1) / 2
 
         # Color Assignment Algorithms and Bar Creation
         if type(self.bar_color) == str:
             for i in index_list:
                 z_scale = df_sorted[self.y_col].iloc[i]/max_value
                 self.objects.append(Bar(name=df_sorted.iloc[i][self.x_col], location=(x_position, 0.0, z_scale), scale=(.25, .25, z_scale), color=self.bar_color))
-                x_position += 2
+                x_position += 1
         elif type(self.bar_color) == dict:
             for i in index_list:
                 z_scale = df_sorted[self.y_col].iloc[i]/max_value
                 for color in self.bar_color:
                     if df_sorted.iloc[i][self.x_col] == color:
                         self.objects.append(Bar(name=df_sorted.iloc[i][self.x_col], location=(x_position, 0.0, z_scale), scale=(.25, .25, z_scale), color=self.bar_color[color]))
-                x_position += 2
+                x_position += 1
         
         # Text Creation Algorithm
-        sides = ["Front", "Back"]
         axis = ["x", "y"]
-        x_position = (len(df_sorted) * -1) + 1
+        x_position = ((len(df_sorted) * -1) + 1) / 2
         for i in index_list:
-            for side in sides:
-                for ax in axis:
-                    if ax == "x":
-                        self.objects.append(Text(text=df_sorted.iloc[i][self.x_col], location=(x_position, 0.0, 0.0), color=self.text_color, side=side, axis=ax))
-                    elif ax == "y":
-                        self.objects.append(Text(text=df_sorted.iloc[i][self.y_col], location=(x_position, 0.0, 0.0), color=self.text_color, side=side, axis=ax))
-            x_position += 2
-        # CHECK FOR ERRORS
-
-            
+            z_scale = df_sorted[self.y_col].iloc[i]/max_value
+            for ax in axis:
+                if ax == "x":
+                    self.objects.append(Text(name=df_sorted.iloc[i][self.x_col], text=df_sorted.iloc[i][self.x_col], z_scale=z_scale, location=(x_position, -.251, 5.0), color=self.text_color, axis=ax))
+                elif ax == "y":
+                    self.objects.append(Text(name=df_sorted.iloc[i][self.x_col], text=df_sorted.iloc[i][self.y_col], z_scale=z_scale, location=(x_position, -.251, 5.0), color=self.text_color, axis=ax))
+            x_position += 1
 
 
     def check_types(self):
@@ -89,25 +80,12 @@ class BarChart:
 
         if type(self.data) not in [pandas.DataFrame]:
             raise TypeError("Data must be a pandas dataframe.")
-        # if type(self.y_values) not in [int, float]:
-#        if isinstance(self.y_values, numpy.float64):
-#            raise TypeError("Y-label must be a numerical value.")
-#        if type(self.x_labels) not in [str]:
-#            raise TypeError("X-labels must be a string.")
         if type(self.title) not in [str]:
             raise TypeError("Title must be a string.")
-        if type(self.location) not in [tuple]:
-            raise TypeError("Location must be a tuple.")
-        if type(self.rotation) not in [tuple]:
-            raise TypeError("Rotation must be a tuple.")
-        if type(self.scale) not in [tuple]:
-            raise TypeError("Scale must be a tuple.")
         if type(self.bar_color) not in [str, dict]:
             raise TypeError("Bar color must be a string or dictionary.")
         if type(self.text_color) not in [str]:
             raise TypeError("Text color must be a string or dictionary.")
-
-
-
-
         
+        # WRITE A FUNCTION TO CHECK IF THE X_LABELS ARE STRINGS AND Y_LABELS ARE NUMERICAL.
+        # Dataframe types complicate this process.
