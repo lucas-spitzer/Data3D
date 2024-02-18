@@ -33,7 +33,7 @@ class Bar:
 class Text:
     """ Create a singular text object and adds the object to the active 3D scene. """
 
-    def __init__(self, name, text, axis, z_scale, location=(0.0, -.251, 1.0), rotation=(math.radians(90.0), 0.0, 0.0), color="#FAF9F6"):
+    def __init__(self, name, text, axis, z_scale, location=(0.0, -.251, 1.0), rotation=(math.radians(90.0), 0.0, 0.0), color="#F1F8FA", unit=""):
         """
         Initializes text object with name, text, location, rotation, scale, and color.
 
@@ -43,12 +43,19 @@ class Text:
             location (tuple): Location of the text object. Default is (0.0, 0.0, 2.0), at the origin of the 3D scene.
             rotation (tuple): Rotation of the text object. Default is (0.0, 0.0, 0.0), no rotation.
             scale (tuple): Scale of the text object. Default is (1.0, 1.0, 1.0), a text with a scale of 1.
-            color (str): Hex color of the text object. Default is "#FAF9F6", off-white.
+            color (str): Hex color of the text object. Default is "#F1F8FA", off-white.
         """
 
         self.axis = axis
         self.name = name + f"-{self.axis}Text"
-        self.content = str(text)
+        if unit == '':
+            self.content = str(text)
+        elif unit[0] == '.' and axis == "y":
+            self.content =  str(text) + unit[1:]
+        elif unit[-1] == '.' and axis == "y":
+            self.content = unit[0] + str(text)
+        else:
+            self.content = str(text)
         self.location = location
         self.rotation = rotation
         self.color = color
@@ -76,7 +83,7 @@ class Text:
         length = len(self.content)
         if length <= 5:
             self.size = .22 - (length * .02)
-        elif length <= 12:
+        elif length <= 15:
             self.size = .17 - (length * .01)
         else:
             raise ValueError("Text is too long to scale.")
@@ -90,6 +97,9 @@ class Text:
             self.location = (self.location[0], self.location[1], (self.z_scale * 2) - .2)
         elif self.axis == "y":
             self.location = (self.location[0], self.location[1], (self.z_scale * 2) - .4)
+        elif self.axis == "z":
+            self.location = (0, -.101, 2.45)
+            self.size = .24
         else:
             raise ValueError("Axis must be either 'x' or 'y'.")
 
@@ -135,3 +145,35 @@ class Material:
         rbg.append(b)
         rbg.append(1.0)
         return tuple(rbg)
+    
+
+class Board:
+    """ Overhead board object to display the title or dynamic value of the 3D bar chart. """
+
+    def __init__(self, name, text, location=(0.0, 0.0, 2.5), scale=(.7, .1, .2), color="#8A8D8E"):
+        """
+        Initializes board object with name, text, location, rotation, and color.
+
+        Parameters: 
+            name (str): Name of the board object. 
+            text (str): Text to be displayed.
+            location (tuple): Location of the board object. Default is (0.0, 0.0, 2.0), at the origin of the 3D scene.
+            rotation (tuple): Rotation of the board object. Default is (0.0, 0.0, 0.0), no rotation.
+            color (str): Hex color of the board object. Default is '#F1F8FA', off-white.
+        """
+
+        self.name = name + "-Board"
+        self.content = text
+        self.location = location
+        self.scale = scale
+        self.color = color
+        self.create()
+
+    def create(self):
+        """ Creates the board object in the active scene, sets the name, creates an accessor variable, changes text value, and adds color to the object. """
+
+        bpy.ops.mesh.primitive_cube_add(location=self.location, scale=self.scale)
+        self.board = bpy.context.object # Producing a accessor to the board object.
+        self.board.name = self.name
+        Material(self.name, self.color) # Set the color of the active board object.
+        Text(self.name, self.content, "z", 0, color='#F1F8FA') # Set the text of the active board object.
