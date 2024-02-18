@@ -1,10 +1,10 @@
-import pandas, bpy
+import pandas, bpy, numpy
 from _objects import Bar, Text
 
 class BarChart:
     """ Create a 3D bar chart by utilizing the Bar and Text classes. """
 
-    def __init__(self, data, x_labels, y_values, title, location=(0.0, 0.0, 0.0), rotation=(0.0, 0.0, 0.0), scale=(1.0, 1.0, 1.0), text_color="#274472", bar_color="#274472"):
+    def __init__(self, data, x_labels, y_values, title="", text_color="#FAF9F6", bar_color="#20318D"):
         """
         Initializes 3D bar chart with data, x_labels, y_label, title, location, rotation, scale, text_color, and bar_color.
 
@@ -17,20 +17,22 @@ class BarChart:
             rotation (tuple): Rotation of the 3D bar chart. Default is (0.0, 0.0, 0.0), no rotation.
             scale (tuple): Scale of the 3D bar chart. Default is (1.0, 1.0, 1.0), a 3D bar chart with a scale of 1.
             text_color (str): Hex color of the text object. Default is "#FAF9F6", off-white.
-            bar_color (str or dict): Color of the bar objects. Dict translates key names to x_column string anmes to Hex. Default is "#274472", a dark shade of blue.
+            bar_color (str or dict): Color of the bar objects. Dict translates key names to x_column string anmes to Hex. Default is "#20318D", a dark shade of blue.
         """
         
         # create a function to confirm data is a dataframe.
         self.data = data
         # create a function to confirm y_labels are numerical / quantitative.
+        data[x_labels] = data[x_labels].astype('string')
         self.x_labels = data[x_labels]
+        data[y_values] = data[y_values].apply(float)
         self.y_values = data[y_values]
         self.x_col = x_labels
         self.y_col = y_values
         self.title = title
-        self.location = location
-        self.rotation = rotation
-        self.scale = scale
+        # self.location = location
+        # self.rotation = rotation
+        # self.scale = scale
         self.bar_color = bar_color
         self.text_color = text_color
         self.objects = []
@@ -44,20 +46,21 @@ class BarChart:
         bpy.context.scene.name = self.title
 
         # Sort and Scaling Algorithm
-        df_sorted = self.data.sort_values(by=self.y_values, ascending=False)
-        max_value = df_sorted[self.y_values].max()
+        df_sorted = self.data.sort_values(by=self.y_col, ascending=False)
+        index_list = df_sorted.index.tolist()
+        max_value = df_sorted[self.y_col].max()
         
         # Object Placement Algorithm
         x_position = (len(df_sorted) * -1) + 1
 
         # Color Assignment Algorithms and Bar Creation
         if type(self.bar_color) == str:
-            for i in df_sorted:
+            for i in index_list:
                 z_scale = df_sorted[self.y_col].iloc[i]/max_value
                 self.objects.append(Bar(name=df_sorted.iloc[i][self.x_col], location=(x_position, 0.0, z_scale), scale=(.25, .25, z_scale), color=self.bar_color))
                 x_position += 2
         elif type(self.bar_color) == dict:
-            for i in df_sorted:
+            for i in index_list:
                 z_scale = df_sorted[self.y_col].iloc[i]/max_value
                 for color in self.bar_color:
                     if df_sorted.iloc[i][self.x_col] == color:
@@ -67,7 +70,8 @@ class BarChart:
         # Text Creation Algorithm
         sides = ["Front", "Back"]
         axis = ["x", "y"]
-        for i in df_sorted:
+        x_position = (len(df_sorted) * -1) + 1
+        for i in index_list:
             for side in sides:
                 for ax in axis:
                     if ax == "x":
@@ -85,10 +89,11 @@ class BarChart:
 
         if type(self.data) not in [pandas.DataFrame]:
             raise TypeError("Data must be a pandas dataframe.")
-        if type(self.y_values) not in [int, float]:
-            raise TypeError("Y-label must be a numerical value.")
-        if type(self.x_labels) not in [str]:
-            raise TypeError("X-labels must be a string.")
+        # if type(self.y_values) not in [int, float]:
+#        if isinstance(self.y_values, numpy.float64):
+#            raise TypeError("Y-label must be a numerical value.")
+#        if type(self.x_labels) not in [str]:
+#            raise TypeError("X-labels must be a string.")
         if type(self.title) not in [str]:
             raise TypeError("Title must be a string.")
         if type(self.location) not in [tuple]:

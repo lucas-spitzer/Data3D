@@ -27,13 +27,13 @@ class Bar:
         bpy.ops.mesh.primitive_cube_add(location=self.location, rotation=self.rotation, scale=self.scale)
         self.bar = bpy.context.object # Producing a accessor to the bar object.
         self.bar.name = self.name
-        Material(self.color) # Set the color of the active bar object.
+        Material(self.name, self.color) # Set the color of the active bar object.
 
 
 class Text:
     """ Create a singular text object and adds the object to the active 3D scene. """
 
-    def __init__(self, name, text, axis, side, location=(0.0, 0.0, 1.0), rotation=(math.radians(90.0), 0.0, 0.0), scale=(0.25, 0.25, 5.0), color="#FAF9F6"):
+    def __init__(self, text, axis, side, location=(0.0, 0.0, 1.0), rotation=(math.radians(90.0), 0.0, 0.0), scale=(0.25, 0.25, 5.0), color="#FAF9F6"):
         """
         Initializes text object with name, text, location, rotation, scale, and color.
 
@@ -48,14 +48,14 @@ class Text:
 
         self.side = side
         self.axis = axis
-        self.name = name + f"-{self.axis}Text-{self.side}"
-        self.text = text
+        self.name = str(text) + f"-{self.axis}Text-{self.side}"
+        self.content = str(text)
         self.location = location
         self.rotation = rotation
         self.scale = scale
         self.color = color
-        self.scale()
-        self.location()
+        self.set_scale()
+        self.set_location()
         self.create()
 
     def create(self):
@@ -63,45 +63,53 @@ class Text:
 
         bpy.ops.object.text_add(location=self.location, rotation=self.rotation, scale=self.scale)
         bpy.ops.object.modifier_add(type='SOLIDIFY')
+        bpy.context.object.data.align_x = 'CENTER'
         self.text = bpy.context.object # Producing a accessor to the text object.
-        self.text.data.body = self.text
+        self.text.data.body = self.content
         self.text.name = self.name
-        Material(self.color) # Set the color of the active text object.
+        Material(self.name, self.color) # Set the color of the active text object.
 
-    def scale(self):
+    def set_scale(self):
         """ Scales the text object by the provided scale. """
 
         # Base Scaling Algorithm
-        length = len(self.text)
+        length = len(self.content)
 
         if length <= 7:
-            scale = .275 - (length * .025)
-            self.text.scale = (scale, scale, 5.0)
+            base_scale = .275 - (length * .025)
+            self.scale = (base_scale, base_scale, 5.0)
         elif length == 8:
-            scale = .09
-            self.text.scale = (scale, scale, 5.0)
+            base_scale = .09
+            self.scale = (base_scale, base_scale, 5.0)
         elif length <= 10:
-            scale = .09 - ((length - 8) * .025)
-            self.text.scale = (scale, scale, 5.0)
+            base_scale = .09 - ((length - 8) * .025)
+            self.scale = (base_scale, base_scale, 5.0)
         else:
             raise ValueError("Text is too long to scale.")
         
 
-    def location(self):
+    def set_location(self):
         """ Changes the z-location of the text object. """
 
         # Z Location Algorithm
+        location_list = list(self.location)
         if self.axis.lower() == "x":
             z_scale = self.scale[2]
-            self.location[2] = (z_scale * 2) - .2
+            location_list[2] = (z_scale * 2) - .2
+            self.location = tuple(location_list)
             if self.side == 'Front':
-                self.location[1] = -.275
+                location_list[1] = -.275
+                self.location = tuple(location_list)
             elif self.side == 'Back':
-                self.location[1] = .275
-                self.rotation[2] = math.radians(180.0)
+                location_list[1] = .275
+                self.location = tuple(location_list)
+                rotation_list = list(self.rotation)
+                rotation_list[2] = math.radians(180.0)
+                self.rotation = tuple(rotation_list)
         elif self.axis.lower() == "y":
             z_scale = self.scale[2]
-            self.location[2] = (z_scale * 2) - .4
+            location_list[2] = (z_scale * 2) - .4
+            self.location = tuple(location_list)
         else:
             raise ValueError("Axis must be either 'x' or 'y'.")
 
@@ -125,13 +133,13 @@ class Material:
 
         if type(self.color) not in [str] or self.color[0] != "#" or len(self.color) != 7:
             raise TypeError("Color must be a string (Hex).")
-        self.color = self.hex_to_rgb(self.color)
+        self.rgb = self.hex_to_rgb(self.color)
         self.material = bpy.data.materials.new(f"{self.name}-Material")
-        self.material.diffuse_color = self.color
+        self.material.diffuse_color = self.rgb
         active_object = bpy.data.objects.get(self.name)
         active_object.active_material = self.material
 
-    def hex_to_rgb(value):
+    def hex_to_rgb(self, value):
         """ Converts a hex color to a blender compatible RGB color. """
 
         gamma = 2.2
