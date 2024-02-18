@@ -16,8 +16,8 @@ class BarChart:
             location (tuple): Location of the 3D bar chart. Default is (0.0, 0.0, 0.0), at the origin of the 3D scene.
             rotation (tuple): Rotation of the 3D bar chart. Default is (0.0, 0.0, 0.0), no rotation.
             scale (tuple): Scale of the 3D bar chart. Default is (1.0, 1.0, 1.0), a 3D bar chart with a scale of 1.
-            text_color (str or dict): Color of the text objects. Dict translate to RGB and strings to Hex. Default is "#274472", a dark sahde of blue.
-            bar_color (str or dict): Color of the bar objects. Dict translate to RGB and strings to Hex. Default is "#274472", a dark sahde of blue.
+            text_color (str): Hex color of the text object. Default is "#FAF9F6", off-white.
+            bar_color (str or dict): Color of the bar objects. Dict translates key names to x_column string anmes to Hex. Default is "#274472", a dark shade of blue.
         """
         
         # create a function to confirm data is a dataframe.
@@ -46,14 +46,37 @@ class BarChart:
         # Sort and Scaling Algorithm
         df_sorted = self.data.sort_values(by=self.y_values, ascending=False)
         max_value = df_sorted[self.y_values].max()
-
-        # Color Assignment Algorithm
-
+        
         # Object Placement Algorithm
         x_position = (len(df_sorted) * -1) + 1
+
+        # Color Assignment Algorithms and Bar Creation
+        if type(self.bar_color) == str:
+            for i in df_sorted:
+                z_scale = df_sorted[self.y_col].iloc[i]/max_value
+                self.objects.append(Bar(name=df_sorted.iloc[i][self.x_col], location=(x_position, 0.0, z_scale), scale=(.25, .25, z_scale), color=self.bar_color))
+                x_position += 2
+        elif type(self.bar_color) == dict:
+            for i in df_sorted:
+                z_scale = df_sorted[self.y_col].iloc[i]/max_value
+                for color in self.bar_color:
+                    if df_sorted.iloc[i][self.x_col] == color:
+                        self.objects.append(Bar(name=df_sorted.iloc[i][self.x_col], location=(x_position, 0.0, z_scale), scale=(.25, .25, z_scale), color=self.bar_color[color]))
+                x_position += 2
+        
+        # Text Creation Algorithm
+        sides = ["Front", "Back"]
+        axis = ["x", "y"]
         for i in df_sorted:
-            self.objects.append(Bar(name=df_sorted.iloc[i][self.x_col], location=(x_position, 0.0, 0.0), scale=(.25, .25, (df_sorted[self.y_col].iloc[i])/max_value), color=self.bar_color))
+            for side in sides:
+                for ax in axis:
+                    if ax == "x":
+                        self.objects.append(Text(text=df_sorted.iloc[i][self.x_col], location=(x_position, 0.0, 0.0), color=self.text_color, side=side, axis=ax))
+                    elif ax == "y":
+                        self.objects.append(Text(text=df_sorted.iloc[i][self.y_col], location=(x_position, 0.0, 0.0), color=self.text_color, side=side, axis=ax))
             x_position += 2
+        # CHECK FOR ERRORS
+
             
 
 
@@ -76,7 +99,7 @@ class BarChart:
             raise TypeError("Scale must be a tuple.")
         if type(self.bar_color) not in [str, dict]:
             raise TypeError("Bar color must be a string or dictionary.")
-        if type(self.text_color) not in [str, dict]:
+        if type(self.text_color) not in [str]:
             raise TypeError("Text color must be a string or dictionary.")
 
 
