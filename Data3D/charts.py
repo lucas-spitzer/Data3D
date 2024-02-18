@@ -12,10 +12,8 @@ class BarChart:
             data (dataframe): Pandas dataframe containing all data for the 3D bar chart.
             x_labels (str): String of the column name for the x-axis labels.
             y_values (str): String of the column name for the y-axis labels.
+            unit (str): String of the unit to be displayed on the y-axis labels. Default is an empty string.
             title (str): Title of the 3D bar chart.
-            location (tuple): Location of the 3D bar chart. Default is (0.0, 0.0, 0.0), at the origin of the 3D scene.
-            rotation (tuple): Rotation of the 3D bar chart. Default is (0.0, 0.0, 0.0), no rotation.
-            scale (tuple): Scale of the 3D bar chart. Default is (1.0, 1.0, 1.0), a 3D bar chart with a scale of 1.
             text_color (str): Hex color of the text object. Default is "#F1F8FA", off-white.
             bar_color (str or dict): Color of the bar objects. Dict translates key names to x_column string anmes to Hex. Default is "#20318D", a dark shade of blue.
         """
@@ -34,7 +32,6 @@ class BarChart:
         self.objects = []
         self.check_types()
         self.build()
-
 
     def build(self):
         """ Creates the 3D bar chart in the active scene. """
@@ -76,7 +73,6 @@ class BarChart:
                     self.objects.append(Text(name=row[self.x_col], text=row[self.y_col], z_scale=z_scale, location=(x_position, -.251, 5.0), color=self.text_color, axis=ax, unit=self.unit))
             x_position += 1
 
-
     def check_types(self):
         """ Checks the types of all parameters. If type is incorrect, a TypeError is raised."""
 
@@ -104,10 +100,8 @@ class AnimatedBarChart(BarChart):
             data (dataframe): Pandas dataframe containing all data for the 3D bar chart.
             x_labels (str): String of the column name for the x-axis labels.
             y_values (str): String of the column name for the y-axis labels.
+            dynamic (str): String of the column name for the dynamic (actively changing) value.
             title (str): Title of the 3D bar chart.
-            location (tuple): Location of the 3D bar chart. Default is (0.0, 0.0, 0.0), at the origin of the 3D scene.
-            rotation (tuple): Rotation of the 3D bar chart. Default is (0.0, 0.0, 0.0), no rotation.
-            scale (tuple): Scale of the 3D bar chart. Default is (1.0, 1.0, 1.0), a 3D bar chart with a scale of 1.
             text_color (str): Hex color of the text object. Default is "#FAF9F6", off-white.
             bar_color (str or dict): Color of the bar objects. Dict translates key names to x_column string anmes to Hex. Default is "#20318D", a dark shade of blue.
         """
@@ -118,7 +112,6 @@ class AnimatedBarChart(BarChart):
         self.animate()
         Board(name=self.title, text=self.dynamic_col) # Dynamic not col later on.
 
-
     def animate(self):
         """ Animates the 3D bar chart by utilizing the Bar and Text classes. """
 
@@ -128,3 +121,5 @@ class AnimatedBarChart(BarChart):
 
         super().build()
         # Animation Algorithm
+
+        # CUTOFF: Will update this method / class in the future.
