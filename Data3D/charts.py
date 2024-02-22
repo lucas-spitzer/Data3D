@@ -56,8 +56,9 @@ def bar(data, x_col, y_col, unit="", title="", text_color='#F1F8FA', bar_color="
     bpy.context.scene.name = title
     Board(name=title, text=title)
 
-    # Data Sorting Algorithm
-    df_sorted = data.sort_values(by=y_col, ascending=False)
+    # Data Sorting Algorithm 
+    unique_df = data.drop_duplicates(subset=x_col)
+    df_sorted = unique_df.sort_values(by=y_col, ascending=False)
     max_value = df_sorted[y_col].max()
 
     # Object Placement Algorithm
@@ -68,23 +69,11 @@ def bar(data, x_col, y_col, unit="", title="", text_color='#F1F8FA', bar_color="
     duplicate = False
     if type(bar_color) == str:
         for _, row in df_sorted.iterrows():
-            for object in objects:
-                if object.name == row[x_col] + "-Bar":
-                    duplicate = True
-                    break
-            if duplicate:
-                break
             z_scale = row[y_col]/max_value
             objects.append(Bar(name=row[x_col], location=(x_position, 0.0, z_scale), scale=(.25, .25, z_scale), color=bar_color))
             x_position += 1
     elif type(bar_color) == dict:
         for _, row in df_sorted.iterrows():
-            for object in objects:
-                if object.name == row[x_col] + "-Bar":
-                    duplicate = True
-                    break
-            if duplicate:
-                break
             z_scale = row[y_col]/max_value
             for color in bar_color:
                 if row[x_col] == color:
@@ -96,12 +85,6 @@ def bar(data, x_col, y_col, unit="", title="", text_color='#F1F8FA', bar_color="
     axis = ["x", "y"]
     x_position = ((unique * -1) + 1) / 2
     for _, row in df_sorted.iterrows():
-        for object in objects:
-            if object.name == row[x_col] + "-xText" or object.name == row[x_col] + "-yText":
-                duplicate = True
-                break
-        if duplicate:
-            break
         z_scale = row[y_col]/max_value
         for ax in axis:
             if ax == "x":
