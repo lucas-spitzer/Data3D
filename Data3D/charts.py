@@ -59,7 +59,7 @@ def bar(data, x_col, y_col, unit="", title="", text_color='#F1F8FA', bar_color="
     # Data Sorting Algorithm 
     unique_df = data.drop_duplicates(subset=x_col)
     df_sorted = unique_df.sort_values(by=y_col, ascending=False)
-    max_value = df_sorted[y_col].max()
+    max_val = data[y_col].max()
 
     # Object Placement Algorithm
     unique = df_sorted[x_col].nunique()
@@ -69,12 +69,12 @@ def bar(data, x_col, y_col, unit="", title="", text_color='#F1F8FA', bar_color="
     duplicate = False
     if type(bar_color) == str:
         for _, row in df_sorted.iterrows():
-            z_scale = row[y_col]/max_value
+            z_scale = row[y_col]/max_val
             objects.append(Bar(name=row[x_col], location=(x_position, 0.0, z_scale), scale=(.25, .25, z_scale), color=bar_color))
             x_position += 1
     elif type(bar_color) == dict:
         for _, row in df_sorted.iterrows():
-            z_scale = row[y_col]/max_value
+            z_scale = row[y_col]/max_val
             for color in bar_color:
                 if row[x_col] == color:
                     objects.append(Bar(name=row[x_col], location=(x_position, 0.0, z_scale), scale=(.25, .25, z_scale), color=bar_color[color]))
@@ -85,7 +85,7 @@ def bar(data, x_col, y_col, unit="", title="", text_color='#F1F8FA', bar_color="
     axis = ["x", "y"]
     x_position = ((unique * -1) + 1) / 2
     for _, row in df_sorted.iterrows():
-        z_scale = row[y_col]/max_value
+        z_scale = row[y_col]/max_val
         for ax in axis:
             if ax == "x":
                 objects.append(Text(name=row[x_col], text=row[x_col], z_scale=z_scale, location=(x_position, -.251, 5.0), color=text_color, axis=ax, unit=unit))
