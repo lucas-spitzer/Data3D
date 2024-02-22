@@ -24,7 +24,7 @@ def _check_types(data, title, x_col, y_col, x_vals, y_vals, unit, bar_color, tex
         raise TypeError("Text color must be a string or dictionary.")
 
 
-def bar_chart(data, x_col, y_col, unit="", title="", text_color='#F1F8FA', bar_color="#20318D"):
+def bar(data, x_col, y_col, unit="", title="", text_color='#F1F8FA', bar_color="#20318D"):
     """ Create a 3D bar chart by utilizing the Bar and Text classes.         
     
         Parameters: 
@@ -92,13 +92,9 @@ def bar_chart(data, x_col, y_col, unit="", title="", text_color='#F1F8FA', bar_c
     return objects
 
 
-class AnimatedBarChart(BarChart):
-    """ Create an animated 3D bar chart by utilizing the Bar and Text classes. """
-
-    def __init__(self, data, x_labels, y_values, dynamic, title="", text_color="#F1F8FA", bar_color="#20318D"):
-        """
-        Initializes 3D bar chart with data, x_labels, y_label, title, location, rotation, scale, text_color, and bar_color.
-
+def animated_bar(data, x_col, y_col, dynamic, unit="", title="", text_color='#F1F8FA', bar_color="#20318D"):
+    """ Create an animated 3D bar chart by utilizing the Bar and Text classes.         
+    
         Parameters: 
             data (dataframe): Pandas dataframe containing all data for the 3D bar chart.
             x_labels (str): String of the column name for the x-axis labels.
@@ -107,22 +103,9 @@ class AnimatedBarChart(BarChart):
             title (str): Title of the 3D bar chart.
             text_color (str): Hex color of the text object. Default is "#FAF9F6", off-white.
             bar_color (str or dict): Color of the bar objects. Dict translates key names to x_column string anmes to Hex. Default is "#20318D", a dark shade of blue.
-        """
-        
-        super().__init__(data, x_labels, y_values, title, text_color, bar_color)
-        self.dynamic = data[dynamic]
-        self.dynamic_col = dynamic
-        self.animate()
-        Board(name=self.title, text=self.dynamic_col) # Dynamic not col later on.
+    """
 
-    def animate(self):
-        """ Animates the 3D bar chart by utilizing the Bar and Text classes. """
+    # Create Traditional Bar Chart for Initial Frame
+    bar(data, x_col, y_col, unit, title, text_color, bar_color)
 
-        self.full_data = self.data
-        min_date = self.data['Date'].min()
-        self.data = self.data[self.data['Date'] == min_date] # Mimimun date dataframe.
-
-        super().build()
-        # Animation Algorithm
-
-        # CUTOFF: Will update this method / class in the future.
+    # TBD: Create Animation for Dynamic Input Column
