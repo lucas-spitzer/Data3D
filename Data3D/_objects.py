@@ -1,6 +1,33 @@
 import bpy, math
 
-class Bar:
+class BlenderObject:
+    """ Base class for all 3D objects. """
+
+    def __init__(self, name, location=(0.0, 0.0, 0.0), rotation=(0.0, 0.0, 0.0), scale=(1.0, 1.0, 1.0), color="#FFFFFF"):
+        """
+        Initializes a 3D object with name, location, rotation, scale, and color.
+
+        Parameters: 
+            name (str): Name of the 3D object.
+            location (tuple): Location of the 3D object. Default is (0.0, 0.0, 0.0), at the origin of the 3D scene.
+            rotation (tuple): Rotation of the 3D object. Default is (0.0, 0.0, 0.0), no rotation.
+            scale (tuple): Scale of the 3D object. Default is (1.0, 1.0, 1.0), a 1 meter cube.
+            color (str): Hex color of the 3D object. Default is "#FFFFFF", white.
+        """
+
+        self.name = name
+        self.location = location
+        self.rotation = rotation
+        self.scale = scale
+        self.color = color
+
+    def create(self):
+        """ Creates the 3D object in the active scene, sets the name, creates an accessor variable, and adds color to the object. """
+
+        raise NotImplementedError("Method must be implemented in the subclass.")
+    
+
+class Bar(BlenderObject):
     """ Create a singular bar object and adds the object to the active 3D scene. """
 
     def __init__(self, name, location=(0.0, 0.0, 1.0), rotation=(0.0, 0.0, 0.0), scale=(0.25, 0.25, 1.0), color="#20318D"):
@@ -107,6 +134,39 @@ class Text:
         else:
             raise ValueError("Axis must be either 'x' or 'y'.")
 
+
+class Board:
+    """ Overhead board object to display the title or dynamic value of the 3D bar chart. """
+
+    def __init__(self, name, text, location=(0.0, 0.0, 2.5), scale=(1.0, .1, .2), color="#BDBDBD"):
+        """
+        Initializes board object with name, text, location, rotation, and color.
+
+        Parameters: 
+            name (str): Name of the board object. 
+            text (str): Text to be displayed.
+            location (tuple): Location of the board object. Default is (0.0, 0.0, 2.5), at the origin of the 3D scene.
+            scale (tuple): Scale of the board object. Default is (1.0, .1, .2), a board with a legnth of 2 meters, width of .2 meters and a height of .4 meters.
+            color (str): Hex color of the board object. Default is "#BDBDBD", a medium shade of gray.
+        """
+
+        self.name = name + "-Board"
+        self.content = text
+        self.location = location
+        self.scale = scale
+        self.color = color
+        self.create()
+
+    def create(self):
+        """ Creates the board object in the active scene, sets the name, creates an accessor variable, changes text value, and adds color to the object. """
+
+        bpy.ops.mesh.primitive_cube_add(location=self.location, scale=self.scale)
+        self.board = bpy.context.object # Producing a accessor to the board object.
+        self.board.name = self.name
+        Material(self.name, self.color) # Set the color of the active board object.
+        Text(self.name, self.content, "z", 0, color="#000000") # Set the text of the active board object.
+
+
 class Material:
     """ Create a singular material object and adds the material to the active object in a 3D scene. """
 
@@ -151,34 +211,3 @@ class Material:
         rbg.append(1.0)
         return tuple(rbg)
     
-
-class Board:
-    """ Overhead board object to display the title or dynamic value of the 3D bar chart. """
-
-    def __init__(self, name, text, location=(0.0, 0.0, 2.5), scale=(1.0, .1, .2), color="#BDBDBD"):
-        """
-        Initializes board object with name, text, location, rotation, and color.
-
-        Parameters: 
-            name (str): Name of the board object. 
-            text (str): Text to be displayed.
-            location (tuple): Location of the board object. Default is (0.0, 0.0, 2.5), at the origin of the 3D scene.
-            scale (tuple): Scale of the board object. Default is (1.0, .1, .2), a board with a legnth of 2 meters, width of .2 meters and a height of .4 meters.
-            color (str): Hex color of the board object. Default is "#BDBDBD", a medium shade of gray.
-        """
-
-        self.name = name + "-Board"
-        self.content = text
-        self.location = location
-        self.scale = scale
-        self.color = color
-        self.create()
-
-    def create(self):
-        """ Creates the board object in the active scene, sets the name, creates an accessor variable, changes text value, and adds color to the object. """
-
-        bpy.ops.mesh.primitive_cube_add(location=self.location, scale=self.scale)
-        self.board = bpy.context.object # Producing a accessor to the board object.
-        self.board.name = self.name
-        Material(self.name, self.color) # Set the color of the active board object.
-        Text(self.name, self.content, "z", 0, color="#000000") # Set the text of the active board object.
