@@ -2,7 +2,7 @@ import pandas, bpy
 from _objects import Bar, Text, Board
 
 def _check_types(data, title, x_col, y_col, x_vals, y_vals, unit, bar_color, text_color):
-    """ Checks the types of all parameters. If type is incorrect, a TypeError is raised. """
+    """ Checks the types of all function parameters. If type is incorrect, a TypeError is raised. """
 
     if type(data) not in [pandas.DataFrame]:
         raise TypeError("Data must be a pandas dataframe.")
@@ -101,9 +101,9 @@ def animated_bar(data, x_col, y_col, dynamic, unit="", title="", text_color='#F1
     
         Parameters: 
             data (dataframe): Pandas dataframe containing all data for the 3D bar chart.
-            x_labels (str): String of the column name for the x-axis labels.
-            y_values (str): String of the column name for the y-axis labels.
-            dynamic (str): String of the column name for the dynamic (actively changing) value.
+            x_col (str): String of the column name for the x-axis.
+            y_col (str): String of the column name for the y-axis.
+            dynamic (str): String of the column name for the dynamic (actively changing) values.
             title (str): Title of the 3D bar chart.
             text_color (str): Hex color of the text object. Default is "#FAF9F6", off-white.
             bar_color (str or dict): Color of the bar objects. Dict translates key names to x_column string anmes to Hex. Default is "#20318D", a dark shade of blue.
