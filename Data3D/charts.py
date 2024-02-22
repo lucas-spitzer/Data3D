@@ -61,16 +61,30 @@ def bar(data, x_col, y_col, unit="", title="", text_color='#F1F8FA', bar_color="
     max_value = df_sorted[y_col].max()
 
     # Object Placement Algorithm
-    x_position = ((len(df_sorted) * -1) + 1) / 2
+    unique = df_sorted[x_col].nunique()
+    x_position = ((unique * -1) + 1) / 2
 
     # Color Assignment Algorithms and Bar Creation
+    duplicate = False
     if type(bar_color) == str:
         for _, row in df_sorted.iterrows():
+            for object in objects:
+                if object.name == row[x_col] + "-Bar":
+                    duplicate = True
+                    break
+            if duplicate:
+                break
             z_scale = row[y_col]/max_value
             objects.append(Bar(name=row[x_col], location=(x_position, 0.0, z_scale), scale=(.25, .25, z_scale), color=bar_color))
             x_position += 1
     elif type(bar_color) == dict:
         for _, row in df_sorted.iterrows():
+            for object in objects:
+                if object.name == row[x_col] + "-Bar":
+                    duplicate = True
+                    break
+            if duplicate:
+                break
             z_scale = row[y_col]/max_value
             for color in bar_color:
                 if row[x_col] == color:
@@ -78,9 +92,16 @@ def bar(data, x_col, y_col, unit="", title="", text_color='#F1F8FA', bar_color="
             x_position += 1
 
     # Text Creation Algorithm
+    duplicate = False
     axis = ["x", "y"]
-    x_position = ((len(df_sorted) * -1) + 1) / 2
+    x_position = ((unique * -1) + 1) / 2
     for _, row in df_sorted.iterrows():
+        for object in objects:
+            if object.name == row[x_col] + "-xText" or object.name == row[x_col] + "-yText":
+                duplicate = True
+                break
+        if duplicate:
+            break
         z_scale = row[y_col]/max_value
         for ax in axis:
             if ax == "x":
@@ -108,4 +129,8 @@ def animated_bar(data, x_col, y_col, dynamic, unit="", title="", text_color='#F1
     # Create Traditional Bar Chart for Initial Frame
     bar(data, x_col, y_col, unit, title, text_color, bar_color)
 
+    suffixes = ["-Bar", "-xText", "-yText"]
+    for suffix in suffixes:
+        active_object = bpy.data.objects.get(x_col + suffix)
+        # Calculate and Assign Animation Keyframes
     # TBD: Create Animation for Dynamic Input Column
