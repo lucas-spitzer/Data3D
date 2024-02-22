@@ -66,7 +66,6 @@ def bar(data, x_col, y_col, unit="", title="", text_color='#F1F8FA', bar_color="
     x_position = ((unique * -1) + 1) / 2
 
     # Color Assignment Algorithms and Bar Creation
-    duplicate = False
     if type(bar_color) == str:
         for _, row in df_sorted.iterrows():
             z_scale = row[y_col]/max_val
@@ -81,7 +80,6 @@ def bar(data, x_col, y_col, unit="", title="", text_color='#F1F8FA', bar_color="
             x_position += 1
 
     # Text Creation Algorithm
-    duplicate = False
     axis = ["x", "y"]
     x_position = ((unique * -1) + 1) / 2
     for _, row in df_sorted.iterrows():
