@@ -1,92 +1,95 @@
 import pandas, bpy
 from _objects import Bar, Text, Board
 
-class BarChart:
-    """ Create a 3D bar chart by utilizing the Bar and Text classes. """
+def _check_types(data, title, x_col, y_col, x_vals, y_vals, unit, bar_color, text_color):
+    """ Checks the types of all parameters. If type is incorrect, a TypeError is raised. """
 
-    def __init__(self, data, x_labels, y_values, unit="", title="", text_color='#F1F8FA', bar_color="#20318D"):
-        """
-        Initializes 3D bar chart with data, x_labels, y_label, title, location, rotation, scale, text_color, and bar_color.
+    if type(data) not in [pandas.DataFrame]:
+        raise TypeError("Data must be a pandas dataframe.")
+    if type(title) not in [str]:
+        raise TypeError("Title must be a string.")
+    if type(x_col) not in [str]:
+        raise TypeError("X-Column identifier must be a string.")
+    if type(y_col) not in [str]:
+        raise TypeError("Y-Column identifier must be a string.")
+    if type(x_vals) not in [pandas.Series] and not x_vals.apply(lambda x: isinstance(x, (str))).any():
+        raise TypeError("X-Values must be string values within a pandas dataframe.")
+    if type(y_vals) not in [pandas.Series] and not y_vals.apply(lambda x: isinstance(x, (float, int))).any():
+        raise TypeError("Y-Values must be numerical values within a pandas dataframe.")
+    if type(unit) not in [str]:
+        raise TypeError("Unit must be a string.")
+    if type(bar_color) not in [str, dict]:
+        raise TypeError("Bar color must be a string or dictionary.")
+    if type(text_color) not in [str]:
+        raise TypeError("Text color must be a string or dictionary.")
 
+
+def bar_chart(data, x_col, y_col, unit="", title="", text_color='#F1F8FA', bar_color="#20318D"):
+    """ Create a 3D bar chart by utilizing the Bar and Text classes.         
+    
         Parameters: 
             data (dataframe): Pandas dataframe containing all data for the 3D bar chart.
-            x_labels (str): String of the column name for the x-axis labels.
-            y_values (str): String of the column name for the y-axis labels.
+            x_col (str): String of the column name for the x-axis labels.
+            y_col (str): String of the column name for the y-axis labels.
             unit (str): String of the unit to be displayed on the y-axis labels. Default is an empty string.
             title (str): Title of the 3D bar chart.
             text_color (str): Hex color of the text object. Default is "#F1F8FA", off-white.
             bar_color (str or dict): Color of the bar objects. Dict translates key names to x_column string anmes to Hex. Default is "#20318D", a dark shade of blue.
-        """
-        
-        self.data = data
-        data[x_labels] = data[x_labels].astype('string')
-        self.x_labels = data[x_labels]
-        data[y_values] = data[y_values].apply(float)
-        self.y_values = data[y_values]
-        self.x_col = x_labels
-        self.y_col = y_values
-        self.title = title
-        self.bar_color = bar_color
-        self.text_color = text_color
-        self.unit = unit
-        self.objects = []
-        self.check_types()
-        self.build()
+    """
 
-    def build(self):
-        """ Creates the 3D bar chart in the active scene. """
+    # Dataframe Column Assignment to Variables
+    x_vals = data[x_col]
+    y_vals = data[y_col]
 
-        bpy.ops.scene.new(type='NEW')
-        bpy.context.scene.name = self.title
-        Board(name=self.title, text=self.title)
+    # Type Conversion from Pandas to Python
+    data[x_col] = data[x_col].astype('string')
+    data[y_col] = data[y_col].apply(float)
 
-        # Sort and Scaling Algorithm
-        df_sorted = self.data.sort_values(by=self.y_col, ascending=False)
-        max_value = df_sorted[self.y_col].max()
-        
-        # Object Placement Algorithm
-        x_position = ((len(df_sorted) * -1) + 1) / 2
+    # Initialize List to Add Blender Objects
+    objects = []
 
-        # Color Assignment Algorithms and Bar Creation
-        if type(self.bar_color) == str:
-            for _, row in df_sorted.iterrows():
-                z_scale = row[self.y_col]/max_value
-                self.objects.append(Bar(name=row[self.x_col], location=(x_position, 0.0, z_scale), scale=(.25, .25, z_scale), color=self.bar_color))
-                x_position += 1
-        elif type(self.bar_color) == dict:
-            for _, row in df_sorted.iterrows():
-                z_scale = row[self.y_col]/max_value
-                for color in self.bar_color:
-                    if row[self.x_col] == color:
-                        self.objects.append(Bar(name=row[self.x_col], location=(x_position, 0.0, z_scale), scale=(.25, .25, z_scale), color=self.bar_color[color]))
-                x_position += 1
-        
-        # Text Creation Algorithm
-        axis = ["x", "y"]
-        x_position = ((len(df_sorted) * -1) + 1) / 2
+    # Type Checking Function
+    _check_types(data, title, x_col, y_col, x_vals, y_vals, unit, bar_color, text_color)
+
+    # Scene Creation Commands
+    bpy.ops.scene.new(type='NEW')
+    bpy.context.scene.name = title
+    Board(name=title, text=title)
+
+    # Data Sorting Algorithm
+    df_sorted = data.sort_values(by=y_col, ascending=False)
+    max_value = df_sorted[y_col].max()
+
+    # Object Placement Algorithm
+    x_position = ((len(df_sorted) * -1) + 1) / 2
+
+    # Color Assignment Algorithms and Bar Creation
+    if type(bar_color) == str:
         for _, row in df_sorted.iterrows():
-            z_scale = row[self.y_col]/max_value
-            for ax in axis:
-                if ax == "x":
-                    self.objects.append(Text(name=row[self.x_col], text=row[self.x_col], z_scale=z_scale, location=(x_position, -.251, 5.0), color=self.text_color, axis=ax, unit=self.unit))
-                elif ax == "y":
-                    self.objects.append(Text(name=row[self.x_col], text=row[self.y_col], z_scale=z_scale, location=(x_position, -.251, 5.0), color=self.text_color, axis=ax, unit=self.unit))
+            z_scale = row[y_col]/max_value
+            objects.append(Bar(name=row[x_col], location=(x_position, 0.0, z_scale), scale=(.25, .25, z_scale), color=bar_color))
+            x_position += 1
+    elif type(bar_color) == dict:
+        for _, row in df_sorted.iterrows():
+            z_scale = row[y_col]/max_value
+            for color in bar_color:
+                if row[x_col] == color:
+                    objects.append(Bar(name=row[x_col], location=(x_position, 0.0, z_scale), scale=(.25, .25, z_scale), color=bar_color[color]))
             x_position += 1
 
-    def check_types(self):
-        """ Checks the types of all parameters. If type is incorrect, a TypeError is raised."""
+    # Text Creation Algorithm
+    axis = ["x", "y"]
+    x_position = ((len(df_sorted) * -1) + 1) / 2
+    for _, row in df_sorted.iterrows():
+        z_scale = row[y_col]/max_value
+        for ax in axis:
+            if ax == "x":
+                objects.append(Text(name=row[x_col], text=row[x_col], z_scale=z_scale, location=(x_position, -.251, 5.0), color=text_color, axis=ax, unit=unit))
+            elif ax == "y":
+                objects.append(Text(name=row[x_col], text=row[y_col], z_scale=z_scale, location=(x_position, -.251, 5.0), color=text_color, axis=ax, unit=unit))
+        x_position += 1
 
-        if type(self.data) not in [pandas.DataFrame]:
-            raise TypeError("Data must be a pandas dataframe.")
-        if type(self.title) not in [str]:
-            raise TypeError("Title must be a string.")
-        if type(self.bar_color) not in [str, dict]:
-            raise TypeError("Bar color must be a string or dictionary.")
-        if type(self.text_color) not in [str]:
-            raise TypeError("Text color must be a string or dictionary.")
-        
-        # WRITE A FUNCTION TO CHECK IF THE X_LABELS ARE STRINGS AND Y_LABELS ARE NUMERICAL.
-        # Dataframe types complicate this process.
+    return objects
 
 
 class AnimatedBarChart(BarChart):
