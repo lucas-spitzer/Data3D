@@ -24,8 +24,8 @@ def _check_types(data, title, x_col, y_col, x_vals, y_vals, unit, bar_color, tex
         raise TypeError("Text color must be a string or dictionary.")
 
 
-def bar(data, x_col, y_col, unit="", title="", text_color='#F1F8FA', bar_color="#20318D"):
-    """ Create a 3D bar chart by utilizing the Bar and Text classes.         
+def bar(data, x_col, y_col, unit="", title="", text_color='#F1F8FA', bar_color="#20318D", type="Base"):
+    """ Create a 3D bar chart by utilizing the Bar, Text, Material, and Board classes.         
     
         Parameters: 
             data (dataframe): Pandas dataframe containing all data for the 3D bar chart.
@@ -56,13 +56,25 @@ def bar(data, x_col, y_col, unit="", title="", text_color='#F1F8FA', bar_color="
     bpy.context.scene.name = title
     Board(name=title, text=title)
 
+    # SWITCH based on type parameter
+    match type:
+        case "Base":
+            # Sort and set constants for x_position, max_val, etc.
+            max_val = df_sorted[y_col].max()
+        case "Animated":
+            max_val = data[y_col].max()
+
     # Data Sorting Algorithm 
     unique_df = data.drop_duplicates(subset=x_col)
     df_sorted = unique_df.sort_values(by=y_col, ascending=False)
-    max_val = data[y_col].max()
+    if type != "Base":
+        max_val = data[y_col].max()
+        # Initialize column for time (animation)
+    else:
+        max_val = df_sorted[y_col].max()
 
     # Object Placement Algorithm
-    unique = df_sorted[x_col].nunique()
+    unique = df_sorted[x_col].nunique() # number of unique x values
     x_position = ((unique * -1) + 1) / 2
 
     # Color Assignment Algorithms and Bar Creation
